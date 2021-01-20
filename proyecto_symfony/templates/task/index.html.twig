@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Todas las tareas{% endblock %}
+
+{% block body %}
+<div class="example-wrapper">
+    <h2>{{ titulo }} ✅</h2>
+    {% if tasks|length > 0 %}
+        <table>
+            <tr>
+                <th>Tarea</th>
+                <th>Prioridad</th>
+                <th>Horas presupuestadas</th>
+                <th>Acciones</th>
+            </tr>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+
+                    {% if task.priority == 'high' %}
+                        <td>Alta</td>
+                    {% endif %}
+                    {% if task.priority == 'medium' %}
+                        <td>Media</td>
+                    {% endif %}
+                    {% if task.priority == 'low' %}
+                        <td>Baja</td>
+                    {% endif %}
+
+                    <td>{{ task.hours }}</td>
+                    <td class="buttons">
+                        <a href="{{ path('task_detail', {'id':task.id}) }}" class="btn-show">Ver</a>
+                        
+                        {# Solamente el usuario que sea el creador de la tarea podrá editarla o eliminarla #}
+                        {% if task.user == app.user %}
+                            <a href="{{ path('task_edit', {'id':task.id}) }}" class="btn-edit">Editar</a>
+                            <a href="{{ path('task_delete', {'id':task.id}) }}" class="btn-delete">Eliminar</a>
+                        {% endif %}
+                        
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <strong>No hay tareas disponibles en estos momentos</strong>
+    {% endif %}
+</div>
+{% endblock %}

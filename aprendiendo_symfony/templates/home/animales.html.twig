@@ -1,0 +1,130 @@
+{# TODO LO QUE SE VE AQUÍ ESTÁ EN TWIG DOCS (documentación de twig) #}
+{% extends 'layouts/master.html.twig' %}
+
+{% block cabecera %}
+    <!-- Con la función parent() heredo lo que hay en el bloque del padre -->
+    {{ parent() }}
+    <h2>{{ title }}</h2>
+{% endblock %}
+
+{% block contenido %}
+    {# Así se hace un comentario en twig #}
+    
+    {# Estas variables se las hemos pasado a la plantilla desde el controlador. Aquí vemos también cómo se concatena en twig #}
+    <h2> {{"Hola " ~ nombre ~ " tu edad es " ~ edad ~ " años"}}</h2>
+    
+    {# Sin embargo, también en la propia plantilla podemos crearnos variables: #}
+    {% set movil = "Samsung Galaxy" %}
+    <h4>El movil es: {{ movil }}</h4>
+    
+    {# Así se hace un dump en twig #}
+    <!-- {{ dump(animales) }} -->
+    
+    {# Cuando tenemos un array asociativo, para sacar un elemento concreto de dicho array debemos hacerlo como en javascript (elemento.propiedad) #}
+    <p>El portero del atleti es {{ jugadores.portero }} y el delantero es {{ jugadores.delantero }}</p>
+    
+    
+    
+    {# CONDICIONALES #}
+    
+    {% if jugadores.medio == "Koke" %}
+        <p>El medio del atleti es Koke</p>
+    {% else %}
+        <p>Koke no juega hoy. En su lugar juega {{ jugadores.medio }}</p>
+    {% endif %}
+    
+    {# En twig también existe una cosa que es el starts/ends que evalúa si un elemento empieza o termina por lo que queramos evaluar #}
+    {% if jugadores.delantero starts with 'Co' and jugadores.delantero ends with 'a' %}
+        <p>El delantero {{ jugadores.delantero }} empieza por "C" y acaba por "a"</p>
+    {% endif %}
+    
+    
+    
+    {# BUCLES: en twig el for vale para hacer lo mismo que el foreach #}
+    
+    {# Aprovechamos y vemos como se usa un filtro (en este caso el length) --> variable + tuberia + filtro #}
+    {% if animales|length >= 0 %}
+        <h4>La lista de animales es:</h4>
+        <ul>
+            {% for animal in animales %}
+                <li>{{ animal }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <hr />
+    
+    {# Otra forma de usar un for #}
+    {% for i in 0..10 %}
+        <p>{{ i }}</p>
+    {% endfor %}
+    
+    <hr />
+    
+    
+    
+    {# FUNCIONES PREDEFINIDAS EN TWIG #}
+    
+    {# sacar el valor mínimo de un array de números #}
+    {{ min([124, 333, 11, 24, 48, 100]) }}
+    <br />
+    
+    {# sacar el valor máximo de un array de números #}
+    {{ max([124, 333, 11, 24, 48, 100]) }}
+    <br />
+    
+    {# sacar un elemento aleatorio de un array #}
+    {{ random(animales) }}
+    <br />
+    
+    {# Función range(). Para usar por ejemplo para hacer un bucle for como el de antes. Si le pasamos un tercer parámetro le podemos especificar
+    que de saltos (por ejemplo de 5 en 5) #}
+    {% for i in range(0, 20, 5) %}
+        <p>{{ i }}</p>
+    {% endfor %}
+    
+    <hr />
+    
+    
+    
+    {# INCLUDES #}
+    {# Podemos cargar trozos de código que estén en otras plantillas #}
+    {{ include('partials/include1.html.twig') }}
+    
+    <hr />
+    
+    {# También podemos hacer el include pasándole parámetros al fichero #}
+    {{ include('partials/include2.html.twig', {name: 'Vic'}) }}
+    
+    <hr />
+    
+    
+    {# FILTROS #}
+    {{ animales|length }}
+    <br />
+    
+    {% set variable = "      hola    " %}
+    {{ dump(variable|trim) }}
+    <br />
+    {{ variable|trim|upper }}
+    <br />
+    {{ variable|trim|lower }}
+    
+    
+    <hr />
+    
+    
+    
+    {# EXTENSIONES PERSONALIZADAS #}
+    
+    {# Probamos la extensión personalizada que nos hemos creado en src/Twig/MiFiltroExtension.php (en el fichero apuntes_y_comandos.txt
+    está explicado todo el proceso) #}
+    <h1>EXTENSIONES PERSONALIZADAS</h1>
+    {# Le ponemos el raw para que interprete el código html que devuelve nuestra extensión personalizada. Si no se lo ponemos lo imprime tal cual #}
+    
+    {# La podemos usar como función #}
+    {{ multiplicar(2)|raw }}
+    
+    {# O como filtro #}
+    {{ 12|multiplicar|raw }}
+{% endblock %}

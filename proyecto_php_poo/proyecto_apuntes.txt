@@ -1,0 +1,2 @@
+Este proyecto consiste en una tienda de camisetas con su login, registro, carrito, etc..
+Está hecho con php puro pero siguiendo un modelo MVC (pero sin framework ni nada)

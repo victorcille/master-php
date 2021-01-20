@@ -1,0 +1,99 @@
+CREAR MODELOS EN LARAVEL: 
+
+Los modelos son clases que representan las entidades (tablas) de nuestra base de datos
+	--> Importante*: Cuando creamos un modelo debemos hacerlo en singular porque va a representar un objeto de esa entidad
+
+Con el comando "php artisan make:model Nombre_de_nuestra entidad_en_singular" (dentro de la ruta de nuestro proyecto), podemos crear un modelo con ese nombre dentro de la carpeta app
+	--> ejemplo: "php artisan make:model Image"
+
+Una vez creado el modelo debemos configurar esa clase para especificarle sus atributos, relaciones, métodos, etc.
+Principalmente debemos crearnos una propiedad protected donde le especifiquemos el nombre de la tabla a la que representa el modelo 
+	 --> en el modelo de Image.php sería por ejemplo: protected $table = 'images';
+
+Luego deberíamos hacer un método por cada relación que tenga el modelo en función de si es una ManyToOne o una OneToMany. Estos métodos que hagamos donde especificamos las relaciones, 
+eloquent (el ORM de Laravel) luego lo convertirá automáticamente a propiedades, de tal manera que si yo, por ejemplo, tengo un objeto $image podré sacar su usuario haciendo por ejemplo $image->user->name 
+
+El modelo User.php ya viene hecho automáticamente por Laravel. Lo único que hemos añadido es el método images() para indicarle la relación OneToMany entre Usuario e Imágenes.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+LOGIN Y REGISTRO DE USUARIOS:
+
+Una vez hechos los modelos, si queremos hacer toda la parte del login y registro de usuarios, con Laravel es muy fácil ya que al ser una cosa muy común ya trae un comando concreto para hacer toda esa parte.
+Para hacerlo introducimos en la consola (dentro de la ruta de nuestro proyecto) el comando --> "php artisan make:auth"
+Se nos generará automáticamente un HomeController, la ruta correspondiente y su vista.
+
+Toda la parte del login y el registro ya viene hecha, lo único que hemos tocado es la ruta que viene por defecto, el redirectTo del registerController y el método handle() del fichero 
+app/Http/Middleware/RedirectIfAuthenticated.php: 
+	--> del /home que nos viene por defecto, lo cambiamos a la raiz (/)
+
+Ahora vamos a modificar el formulario del registro para que además de los campos que ya vienen por defecto, también podamos rellenar el apartado de surname y nick.
+Al meter nuevos campos en el formulario también tendremos que modificar el modelo de User (app/User.php) y el controlador app/Http/Controllers/Auth/RegisterController.php
+
+Mirar el archivo resources/views/layouts/app.blade.php que es la plantilla base del proyecto. Se realizan cambios para maquetarla a las necesidades del proyecto (hay comentarios para guiar)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Nos creamos un controlador que gestione toda la parte de usuarios (configuracion, subida de imágenes, etc). 
+	--> Comando "php artisan make:controller UserController"
+
+En el controlador UserController nos haremos un método config() que renderizará una plantilla. Dicha plantilla será config.blade.php y en ella haremos el formulario para que el usuario pueda cambiar su name, surname, nick y email.
+Con el objeto Auth::user() tendremos acceso a los datos del usuario logueado (su ->name, su ->surname, su ->email, etc). Esto es útil para que los values de los campos del formulario ya vengan rellenos automáticamente (ver plantilla).
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Para trabajar con imágenes y archivos en Laravel, debemos configurar algunas cosas:
+	- En la carpeta storage/app nos vamos a crear una carpeta llamada 'users' que será donde se almacenen las imágenes que los usuarios suban de sus avatares
+	- En la carpeta storage/app nos vamos a crear otra carpeta llamada 'images' que será donde se almacenen las imágenes que los usuarios suban en general a su instagram
+	- En config/filesystems.php vamos a crearnos en el array, en el apartado 'disks' (discos virtuales) un nuevo disco llamado 'users' especificándole en el apartado 'root' el directorio app/users
+	- En config/filesystems.php vamos a crearnos en el array, en el apartado 'disks' (discos virtuales) otro disco llamado 'images' especificándole en el apartado 'root' el directorio app/images
+
+Mirar el método update() del controlador UserController para ver cómo hacer la subida y almacenamiento de los avatares de los usuarios (imagen subida en formulario)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Nos hemos creado una hoja de estilos llamada 'style.css' dentro de la carpeta public/css.
+Para cargarla en nuestro proyecto, insertamos la etiqueta link en el fichero resources/views/layouts/app.blade.php
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Los middlewares se pueden aplicar a nivel de ruta (mirar el doc del proyecto aprendiendo laravel donde se explica como hacer un middleware y aplicarlo a una ruta), o a nivel de controlador.
+En el UserController lo vamos a aplicar a nivel de controlador dentro del constructor (mirar cómo está hecho). Este método lo hemos copiado del HomeController para asegurarnos que si no estamos identificados
+no podemos acceder a ninguna ruta del UserController (por seguridad).
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+En el HomeController haremos el método que saca el listado de imágenes general (de todos los usuarios) como en Instagram. El HomeController es el controlador principal, el que renderiza la plantilla del index.
+Para que no se haga mucho scroll, haremos también una paginación a ese listado.
+Para imprimir las fechas con el estilo "hace x días..." seguiremos las instrucciones del blog de Víctor Robles ("crear helpers en Laravel 5"):
+	1) Nos creamos una carpeta "Helpers" dentro de app
+	2) Dentro de "Helpers" nos creamos un archivo llamado "FormatTime.php"
+	3) Copiamos el código php del blog de Víctor Robles en ese archivo "FormatTime.php"
+	4) Creamos un provider (servicio) que cargará nuestro helper dentro de laravel con el comando:
+		--> "php artisan make:provider FormatTimeServiceProvider"
+	5) Dentro de la carpeta app/Providers se nos habrá creado un fichero llamado "FormatTimeServiceProvider.php". Dentro del método register(), cargamos el helper que nos hemos creado (ver cómo se ha hecho)
+	6) Dentro del directorio config/app.php añadimos el provider al array de providers (App\Providers\FormatTimeServiceProvider::class) y un poco más abajo al array de aliases ('FormatTime' => App\Helpers\FormatTime::class)
+	7) Ya podemos usar nuestro helper en cualquier parte de nuestro código, por ejemplo en una vista hariamos algo así:
+		--> {{ \FormatTime::LongTimeFilter($entrada->created_at) }}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+En la carpeta public/js nos hemos creado un fichero javascript para desarrollar las llamadas AJAX por las que irá el sistema de likes/dislikes.
+Laravel ya viene con jQuery por defecto por lo que es muy útil y no hay que cargarlo.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Según veo en el master de Víctor Robles a partir de la versión 6 de Laravel hay que instalar Laravel UI para que se creen las vistas y las plantillas de toda la parte de registro, login, autenticación de
+usuarios. Para ello, debemos:
+	- Desde la consola de comandos, situarnos en la ruta de nuestra carpeta y ahí introducir el comando:
+		--> "composer require laravel/ui"
+	- Una vez que se haya instalado, debemos instalar toda la parte de la autenticación. Metemos el comando:
+		--> "php artisan ui vue --auth"
+	- Veremos que en la carpeta views se crearán varias vistas como el layouts, auth, etc. Para terminar con la instalación hay que meter un comando más:
+		--> "npm install && npm run dev"
+	- Ahora ya tendremos las mismas plantillas (visualmente se verá igual) y rutas para toda la parte del registro, login, auth, etc que en el proyecto que hemos hecho de Instagram
+
+
+
+
+
+

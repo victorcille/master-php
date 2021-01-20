@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- Fichero base -->
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %} Inicio {% endblock %} - Master en PHP</title>
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <div id="header">
+            {% block cabecera %}
+                <h1>Cabecera de la plantilla</h1>
+            {% endblock %}
+        </div>
+        <section id="content">
+            {% block contenido %}
+                <p>Contenido por defecto</p>
+            {% endblock %}
+        </section>
+        <footer>
+            {% block footer %}
+                victorroblesweb.es
+            {% endblock %}
+        </footer>        
+    </body>
+</html>

@@ -1,0 +1,148 @@
+INSTALACIÓN DE SYMFONY 4:
+
+Podemos hacer la instalación de 2 maneras diferentes: 
+	1) con el comando "composer create-project symfony/skeleton nombre_proyecto". Esta forma sería para hacer una API o un backend separado del frontend. Con esta forma sólo se instala lo básico.
+	2) Como lo vamos a hacer ahora, es decir, con una instalación más completa o pensada para aplicaciones monolíticas donde todo lo gestione el servidor (vistas, plantillas, controladores, etc):
+
+	- En la ruta donde vamos a querer que se instale nuestro proyecto, introducimos el comando:
+		--> "composer create-project symfony/website-skeleton nombre_proyecto" (si lo dejamos así instalará la última versión. Si queremos alguna en cioncreto se lo indicaremos al final como por ejemplo 4.1.*)
+			ejemplo: composer create-project symfony/website-skeleton aprendiendo_symfony 4.1.*
+	- Una vez haya finalizado, tenemos que instalar un paquete para poder usar la aplicación en un servidor apache:
+		--> "composer require symfony/apache-pack" (si nos pregunta algo de una recipe le diremos "y" (yes))
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+MOSTRAR LISTADO DE COMANDOS EN SYMFONY
+
+	- "php bin/console list"
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+COMANDO PARA CREAR UN CONTROLADOR:
+
+	- "php bin/console make:controller nombre_que_queramos"
+		ejemplo: "php bin/console make:controller HomeController"
+
+Además del controlador, se crea una vista de twig
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+RUTAS (ver el fichero config/routes.yaml para ver todo esto)
+
+En config/routes.yaml puedo configurar las rutas (url's) que van a usar las distintas acciones de los distintos controladores (en vez de utilizar el sistema de anotaciones que viene por defecto con @Route
+en la parte de arriba de los métodos de los controladores).
+
+Esta forma funciona de la siguiente manera:
+
+name_de_la_ruta:  --> este es el nombre que le damos a la ruta para luego poder ser usado en enlaces, redirecciones, etc. Por ejemplo usuario.create, image.delete, etc
+    path: /nombre_que_queramos/otro_nombre_que_queramos  --> aquí especificamos la ruta que va a tener. Por ejemplo /user/create o /image/delete
+    controller: Ruta_completa_del_controlador::accion  --> Aquí ya debemos especificarle la ruta completa del controlador y de la acción a la que estará asociada esa ruta. Por ejemplo App\Controller\HomeController::index
+
+IMPORTANTE: los ficheros yaml tienen que estar bien tabulados con los tab (1 tab = 4 espacios). Si no están bien tabulados escupen un error
+
+A la hora de pasar parámetros por la url es igual que en Laravel: en el apartado path: se lo pasaremos entre llaves ({param}) si es obligatorio o con un interrogante ({param?}) si es opcional.
+Podemos definir un defaults: { param: 'valor' } (dentro del yaml) para darle un valor a ese parámetro por defecto.
+También podemos definir el método http que usará esa ruta con una etiqueta methods que recibirá un array con los métodos (p. ejemplo methods: [POST,GET])
+También podemos definir expresiones regulares para validar los parámetros que me llegan por la url con el requirements
+
+Con el comando "php bin/console debug:router" (dentro de la ruta de nuestro proyecto), se nos mostrará un listado con todas las rutas que tengamos definidas en nuestro proyecto así como qué metodo http reciben, su name, etc
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+REDIRECCIONES (ver el método redirigir del HomeController)
+
+Podemos hacer redirecciones desde el controlador de diferentes formas.
+	- 1ª Forma: Con el redirectToRoute() y pasándole el nombre (name) de la ruta
+	- 2ª Forma: Pasándole parámetros por la url () igual que antes pero pasándole un array con los parámetros y sus valores
+	- 3ª Forma: Con el método redirect() pasándole por parámetro la url entera
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PLANTILLAS TWIG: para más información buscar en google twig documentation (https://twig.symfony.com/doc/)
+
+Nos creamos una carpeta "layouts" dentro del directorio "templates" donde nos vamos a hacer un fichero master.html.twig que va a ser un fichero base de los que luego heredarán otras plantillas y poder así ver todo lo que se puede hacer
+en twig.
+
+
+EXTENSIONES PERSONALIZADAS
+En twig también podemos crear extensiones o helpers customizados para poder usarlos cuando queramos. 2 formas hay de hacerlo
+	1) Dentro de "src" nos vamos a crear una carpeta llamada "Twig" y ahí dentro guardaremos estas extensiones/helpers (por ejemplo MiFiltro.php)
+	2) OPCIÓN RECOMENDADA: Desde la consola, dentro de la ruta de nuestro proyecto, con el comando:
+		--> "php bin/console make:twig-extension nombre_que_yo_quiera" (esto ya me creará el directorio Twig dentro de src con el archivo php dentro)
+			ejemplo: "php bin/console make:twig-extension MiFiltro"
+
+Una vez que yo me haya creado esta extensión/helper (en el ejemplo MiFiltro.php hemos definido una función llamada multiplicar) puedo utilizarlas en las plantillas twig 
+	como una función (multiplicar()) 
+	o como un filtro (variable|multiplicar)
+
+Una vez que hayamos desarrollado la extensión/helper tenemos que añadirla o especificarle en el fichero "services.yaml" dentro de "config" (verlo para ver cómo está hecho)
+Ya podemos usarla en cualquier vista
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DOCTRINE
+
+Configuramos la conexión a la bbdd en el fichero .env. Ahí tendremos que definir el nombre que tendrá nuestra base de datos, el usuario, puerto, password, etc.
+Podemos crear la bbdd (sólo crearla, sin ninguna tabla) con el comando:
+	--> "php bin/console doctrine:database:create"
+
+Podemos generar las entidades de nuestro modelo desde la base de datos (esto implica haber hecho las tablas en la base de datos previamente con mySQL) y al revés, es decir, crear las entidades y desde ahí volcarlas a la bbdd 
+para que se creen las tablas. Veremos cómo se hacen las 2 formas.
+
+	--> Para traer la información de la bbdd y que se creen las entidades equivalentes a las tablas, introducimos el comando (cualquiera de los 2 me vale):
+		"php bin/console doctrine:mapping:convert --from-database annotation ./src/Entity"
+		"php bin/console doctrine:mapping:import App\Entity annotation --path=src/Entity"
+
+	    Este comando me crea la/s entidad/es a partir de las tablas que tengamos en la bbdd, pero sin los getter's ni setter's. Para que se me creen, metemos el comando:
+		"php bin/console make:entity --regenerate App\Entity\Entidad_que_quiero_modificar"  --> Aquí es posible que nos salte un error si en las entidades no tenemos la siguiente línea de código "namespace App\Entity;"
+
+	    IMPORTANTE: las tablas en bbdd van en plural pero las entidades dentro de symfony han de ir en singular (por buenas prácticas), por lo que una vez que ya me haya creado mis entidades y mis getter y setter, renombraré las
+			clases y las pondré en singular (Animales en bbdd -> Animal como entidad, Usuarios en bbdd -> Usuario como entidad). Si hay alguna clave extranjera entre tablas tendré que cambiar también ahí los nombres de
+			plural a singular.
+			Ojo que en las relaciones OneToMany/ManyToOne al hacer las entidades siguiendo este método (primero me creo las tablas en bbdd y luego las vuelco en symfony con el comando correspondiente para que me cree las
+			entidades), sólo me va a hacer 1 parte de la relación OneToMany/ManyToOne en aquella entidad (tabla) que tenga la foreign key. Para que la relación sea bidireccional y pueda trabajar en symfony mejor con los
+			objetos, tendré que irme a la entidad a la que apunta la fk y hacer el OneToMany/ManyToOne correspondiente.
+
+	--> Para hacer el camino inverso (crear una entidad y volcarla la bbdd), hacemos:
+		"php bin/console make:entity Nombre_que_queramos"  --> para que nos cree la entidad.
+			por ejemplo "php bin/console make:entity Usuario"
+		Este comando simplemente nos crea la entidad con una sola propiedad (id) y un sólo método (getId()).
+		Podemos añadir nosotros más propiedades en función de los campos que vaya a tener esa entidad/tabla. Si lo hacemos, tendremos que hacer después un "php bin/console make:entity --regenerate App\Entity\Entidad" 
+		(en este caso "php bin/console make:entity --regenerate App\Entity\Usuario") para que se creen los getter y los setter
+		
+		"php bin/console doctrine:migrations:diff"  --> para que nos cree un archivo de migración (en la carpeta "migrations") con las sentencias sql donde vengan los create tables pertinentes.
+
+		"php bin/console doctrine:migrations:migrate"  --> para que se ejecute la migración que nos hemos hecho antes y se creen la/s tabla/s en nuestra bbdd
+
+
+IMPORTANTE: ver el fichero AnimalController para ver todas las posibilidades que Symfony tiene para trabajar con la bbdd (doctrine, dql, queryBuilder, finds, etc). 
+
+Un repositorio es un fichero en el que sólo vamos a encontrar métodos que ejecutan consultas a la bbdd. Un repositorio forma parte de un modelo/entidad (cada vez que creemos una entidad con el comando bin/console make:entity, 
+automáticamente symfony también creará el repositorio). Los repositorios estarán en la carpeta src/Repository.
+
+IMPORTANTE: Si no hacemos la entidad con el comando correspondiente (php bin/console make:entity), tendremos que vincular el repositorio a dicha entidad porque si no no podremos usar los métodos que nos creemos en el repositorio: 
+tendremos que fijarnos que en el archivo donde definimos la entidad (carpeta Entity) y ver si al principio del fichero hay algo como esto:
+		/**
+ 		* @ORM\Entity(repositoryClass=Nombre_de_nuestra_entidadRepository::class)
+ 		*/ 
+Como he dicho anteriormente, si no tiene esto nuestro modelo, no podremos utilizar los métodos que nos creemos en el repositorio de esa entidad  
+En nuestro proyecto aprendiendo_symfony lo podemos ver:
+Como el modelo de Usuario lo hicimos bien (con el comando make:entity), symfony ya ha creado y ha vinculado automáticamente el repositorio al modelo. Sin embargo, como la tabla animales de la bbdd primero la creamos allí y de ahí 
+lo exportamos a una entidad (Animal), en esta entidad no tengo ni siquiera un AnimalRepository (me tendría que crear el fichero y en la entidad Animal vincularlo a dicho repositorio con el @ORM\Entity(repositoryClass=AnimalRepository::class)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+FORMULARIOS:
+
+Vamos a crear los formularios con el Form Builder. Nos crearemos el formulario en el controlador y se lo pasaremos a la vista. 
+Ver el métod crearAnimal() del fichero AnimalController para ver cómo se has seguido los pasos.
+
+A la hora de validar los campos de un formulario (por ejemplo de creación de un Animal), es necesario que carguemos la clase Validator\Constraints en el modelo de Animales. Esta clase me va a permitir definir unas
+constraints (Asserts) para cada campo (ver el modelo Entity/Animal.php para ver cómo lo he hecho).
+Si esas validaciones no se cumplen, en el controlador, en la parte donde se comprueba si el $form->isValid() no lo pasará y no se creará el nuevo objeto.
+
+Se considera una buena práctica separar el formulario en una clase, donde sea ahí donde se define, se customiza, etc y que sea importado en el controlador ya directamente hecho en vez de hacerlo dentro del mismo controlador, añadiendo
+muchas más líneas de código, enfangando todo mucho más. Es por eso que nos hemos creado una carpeta "Form" dentro de "src/" y ahí dentro iremos añadiendo los diferentes formularios que vayamos necesitando en nuestro proyecto.
+El formulario que nos hemos creado se llama "AnimalType.php", se llama así porque se considera un standard llamar a las clases de formularios con el nombre de la entidad a la que pertenecen + el "Type". (ver cómo lo hemos hecho)
+En el controlador AnimalController lo hemos importado con el "use App\Form\AnimalType" y lo hemos utilizado en el método crearAnimal() (he dejado comentado el código donde me creaba el formulario dentro del método).
+
+También podemos validar datos aislados (no sólo de formularios). Para ver cómo hacerlo mirar el método validarEmail() que nos hemos creado en el AnimalController (uso de librería Validator)
+
+
+
+
+
+
+

@@ -1,0 +1,102 @@
+En google buscamos "laravel docs" para poder consultar la documentación de Laravel. 
+-----------------------------------------------------------------------------------------
+
+Instalación de Laravel:
+	- Viendo la versión de Laravel que vamos a usar, tenemos que configurar la versión de PHP, meterlo en la variable de entorno PATH y luego consultar las extensiones que en la documentación 
+	  recomiendan tener instaladas.
+	- Una vez que ya hemos hecho eso, en nuestra consola de comandos nos situamos en nuestra carpeta de trabajo, C:\wamp64\www\master-php y ahí introducimos el comando:
+	  "composer create-project --prefer-dist laravel/laravel aprendiendo_laravel "5.7.*""
+	  	--> aprendiendo_laravel es el nombre que le damos en este caso al proyecto (puede ser el que queramos)
+	  	--> en las comillas debemos especificar la versión que queremos instalar. En este caso la versión 5.7 (aunque actualmente van por la 8.x)
+	- Si hay alguna extensión que recomienda que tengamos y no la tenemos, buscamos en google el fichero .dll (tokenizer.dll, ctype.dll, json.dll, etc) y lo insertamos en la carpeta 
+	  bin/php/version_PHP_que_estemos_usando/ext (carpeta donde se encuentran las extensiones de PHP).
+	- Nos vamos al fichero php.ini y buscamos por la palabra 'extension' hasta que lleguemos al listado de extensiones. Ahí activaremos las que nos acabamos de bajar como por ejemplo:
+		--> extension=php_tokenizer
+		--> extension=php_ctype
+		--> extension=php_json
+	- Ahora nos configuramos el host virtual para tener las url's amigables (buscar virtualhost en el blog de Víctor Robles).
+		1) Nos vamos a  C:\wampp64\bin\apache\apache2.4.39\conf\httpd.conf y añadimos/descomentamos la línea donde vengan configurados los virtual hosts 
+			# Virtual hosts
+			Include conf/extra/httpd-vhosts.conf
+	  	2) Nos vamos a C:\wampp64\bin\apache\apache2.4.39\conf\extra\httpd-vhosts.conf y configuramos ahí el virtualhost (ver cómo lo he hecho).
+		3) Nos vamos al fichero C:\Windows\System32\drivers\etc\hosts y configuramos nuestro host virtual (127.0.0.1 aprendiendo_laravel.com.devel)
+	  	4) Reiniciamos el wampp para que se apliquen los cambios
+	  Ahora si en el navegador ponemos http://aprendiendo_laravel.com.devel nos mostrará la web que estamos montando en el curso
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Estructura de carpetas en Laravel:
+	- En app/Http/Controllers estarán todos los controladores de nuestra aplicación
+	- En resources/views estarán nuestras vistas o plantillas con el nombre nombre_del_fichero.blade.php
+	- En routes/web.php definiremos nuestras rutas
+
+-----------------------------------------------------------------------------------------------------------------------
+
+Con el comando "php artisan list" (dentro de la ruta de nuestro proyecto), podemos ver los comandos más importantes que tiene laravel y para qué se usan.
+Con el comando "php artisan route:list" (dentro de la ruta de nuestro proyecto), podemos ver una lista de las rutas que tenemos definidas en nuestro proyecto con su nombre, uri, método http, etc.
+Con el comando "php artisan make:controller Nombre_que_queramosController" (dentro de la ruta de nuestro proyecto), podemos crear un controlador con ese nombre dentro de la carpeta Controllers
+Con el comando "php artisan make:controller Nombre_que_queramosController --resource" (dentro de la ruta de nuestro proyecto), podemos crear un controlador de tipo resource (controlador con acciones de tipo CRUD ya hechas automáticamente)
+Con el comando "php artisan make:middleware Nombre_que_queramos" (dentro de la ruta de nuestro proyecto), podemos crear un middleware con ese nombre dentro de la carpeta Http/Middleware
+Con el comando "php artisan make:migration nombre_de_la_migracion --table=nombre_de_la_tabla" (dentro de la ruta de nuestro proyecto), podemos crear una migración de nuestra base de datos dentro de la carpeta database/migrations
+	--> ejemplo: php artisan make:migration create_usuarios_table --table=usuarios  (una migración básicamente sirve para definir la estructura de una tabla de la bbdd con sus campos, tipo de datos, etc y que se pueda 
+											crear/modificar/borrar al lanzar el comando correspondiente)
+Con el comando "php artisan migrate" (dentro de la ruta de nuestro proyecto), lanzaremos todas las migraciones que existan en la carpeta database/migrations
+Con el comando "php artisan migrate:rollback" (dentro de la ruta de nuestro proyecto), deshacemos los cambios que hayamos hecho al hacer el migrate (borra las migraciones)
+Con el comando "php artisan migrate:refresh" (dentro de la ruta de nuestro proyecto), borra las migraciones y las vuelve a crear con los cambios que hayamos hecho después de haber lanzado el primer migrate
+Con el comando "php artisan make:seed nombre_que_queramos" (dentro de la ruta de nuestro proyecto), creamos un seed dentro de la carpeta database/seeds
+	--> ejemplo: php artisan make:seed frutas_seed (un seed básicamente sirve para rellenar de datos una tabla de la bbdd cuando lancemos el comando correspondiente)
+Con el comando "php artisan db:seed --class=seed_que_quiero_ejecutar" (dentro de la ruta de nuestro proyecto), lanzaremos el seed especificado para que se ejecute
+	--> ejemplo: php artisan db:seed --class=frutas_seed
+Con el comando "php artisan make:provider nombre_que_queramosServiceProvider" (dentro de la ruta de nuestro proyecto), nos crearemos un provider con ese nombre dentro de la carpeta app/Providers
+	--> ejemplo: php artisan make:provider FormatTimeServiceProvider
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Un middleware es un componente que nos permite filtrar las peticiones que nosotros hacemos mediante http. El middleware (filtro) será una clase php que se ejecutará antes que la acción de un controlador de manera que podemos 
+evaluar ciertas cosas y si no se cumplen, que no se ejecute la acción del controlador asociada a esa ruta o que se haga una redirección o lo que sea.
+Una vez que nos hayamos creado el middleware con el comando correspondiente y de que le hayamos indicado a la ruta que queremos que le aplique dicho middleware 
+(ver cómo se hace en el archivo web.php en la ruta /pruebas/middleware/{param?}), hay que activar el middleware para que funcione.
+Para activarlo hay que ir al fichero Http/Kernel.php y ahí añadirlo en el apartado $routeMiddleware
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+En el archivo .env configuramos nuestra conexión a la base de datos (fruteria_master)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Un archivo de migración es un archivo php donde se recoge la información de la estructura de una tabla (con sus columnas, el tipo de dato que va a contener, etc) y un método para crearla (up) y otro para borrarla (down). Estos ficheros
+son muy útiles cuando queremos llevarnos el proyecto a otro servidor, pasárselo a un compañero, clonarlo del repositorio o subirlo a producción sin necesidad de replicar o copiar la base de datos sino que si tenemos ya el 
+esquema en estos ficheros es muy sencillo levantar la bbdd.
+Una vez que hayamos definido los 2 métodos anteriores tenemos que lanzar la migración para crear/borrar la tabla (mirar apartado de comandos para lanzar las migraciones).
+
+Es necesario meter la sentencia "Schema::defaultStringLength(191);" (haciendo previamente el "use Illuminate\Support\Facades\Schema;") dentro del método boot() en el fichero app/Providers/AppServiceProvider.php para evitar que nos salga
+un error 1071 en la consola al lanzar el comando "php artisan migrate".
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+En Laravel existen los seeders para rellenar de datos nuestras tablas de la bbdd. 
+Un seed es parecido a una migración: mientras que las migraciones se usan para crear/modificar/borrar tablas, los seeders se usan para insertar datos en dichas tablas de la bbdd.
+El mecanismo es el mismo que en las migraciones: primero se crea el seed, luego se edita el fichero que se ha creado en database/seeds y por último se lanza en la consola el comando para que se ejecute.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

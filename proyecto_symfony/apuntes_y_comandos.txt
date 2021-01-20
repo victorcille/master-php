@@ -1,0 +1,42 @@
+IMPORTANTE:
+Nos hemos creado la base de datos con sus tablas (lo podemos encontrar en el fichero database.sql).
+
+Hemos hecho el volcado de esas tablas a Symfony con el comando correspondiente para que se me creen las entidades.
+
+He renombrado los nombres de las entidades de plural (como deben estar en bbdd) a singular (como deben estar en el framework)
+
+Como Task se relaciona con User con una fk, he cambiado también el "Users" de la ManyToOne y de los getter y setter.
+
+Al hacer el volcado de las tablas a entidades siguiendo el método visto en el curso de Víctor Robles, sólo me hace la relación ManyToOne de la entidad Task (que es la que tiene la fk apuntando a User). Para
+que la relación sea bidireccional y pueda trabajar más comodamente en Symfony, tenemos que irnos a User y hacer su correspondiente OneToMany con Task y su correspondiente getter y setter.
+
+En la entidad User deberemos cargar las librerías ArrayCollection y Collection para poder trabajar con arrays de Tasks. Como he dicho anteriormente he de crearme una propiedad privada $tasks con su correspondiente
+anotación donde definimos el OneToMany con Task. También nos creamos un constructor donde vamos a especificar que $this->tasks = new ArrayCollection. Por último nos crearemos el getter y setter correspondiente
+a este campo.
+
+IMPORTANTE --> añadir en el ManyToOne de Task con User el inversedBy
+
+inversedBy la lleva la entidad que tiene la fk apuntando a otra entidad
+mappedBy la lleva la entidad que es apuntada (la que no lleva el inversedBy)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Nos creamos una clase RegisterType para el formulario de registro dentro de src/Form (la carpeta Form también es necesario crearla).
+
+Para cifrar la password usaremos los encoders que symfony trae. Nos vamos a config/packages/security.yaml y ahí definimos un encoder para la entidad User con un cifrado bcrypt y le ponemos un cost = 4 (esto significa que nos lo 
+cifrará 4 veces).
+Una vez que hayamos hecho eso, para usarlo en nuestro controlador, cargamos la librería UserPasswordEncoderInterface para poder cifrar la password del usuario que se registra. Al método register() le pasaremos un parámetro de esta
+clase para que luego lo podamos usar en el cifrado de la password ($encoder). 
+Será necesario también cargar la UserInterface en nuestra Entity\User y hacer que la clase la implemente para que me funcione toda la parte del registro, login, security, etc... Deberemos crear los métodos que me obliga a usar esta 
+interfaz para poder trabajar con la seguridad, etc que ella trae (ver el fichero Entity\User que ahí estará bien explicado)
+
+Para el login también vamos a tener que configurar el config/packages/security.yaml. (Ver el fichero porque habrá comentarios en la parte del form_login, logout y proveedor).
+En el controlador UserController, cuando vayamos a definir el método login() deberemos pasarle por parámetro un objeto del tipo AuthenticationUtils (necesario cargar la librería al principio del fichero con el 'use').
+Para la vista, nos vamos a crear un formulario clásico con su etiquetas <form></form> (no como en el de registro que nos hicimos una clase que luego era importada en el controlador y se la pasábamos a la vista)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Como última medida de seguridad, controlaremos el acceso a las url's. Para ello nos vamos a config/packages/security.yaml y configuramos el apartado del access_control
+Este apartado es muy sencillo, definimos para cada ruta los roles que son permitidos. Si no tienes ese rol, e intentas entrar a alguna de esa ruta, symfony te redirige automáticamente a login.
+Por ejemplo, la primera que hemos definido:
+	Todas las rutas que empiecen o contengan /tarea, serán accesibles por aquellos usuarios con rol user. Si no tienes ese rol, e intentas acceder a por ejemplo 'editar-tarea', te redirecciona a login 

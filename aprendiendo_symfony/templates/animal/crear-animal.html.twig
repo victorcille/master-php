@@ -1,0 +1,20 @@
+{# Mostramos los mensajes flash #}
+{# Forma 1 #}
+{#
+{% for flash_message in app.session.flashbag.get('notice') %}
+    <div class="flash-notice">
+        {{ flash_message }}
+    </div>
+{% endfor %}
+#}
+{# Forma 2 #}
+{% for flash_message in app.session.flashbag.get('message') %}
+    <div class="flash-notice">
+        {{ flash_message }}
+    </div>
+{% endfor %}
+<h1>Formulario con Symfony 5</h1>
+{# Para renderizar un formulario se hace entre una etiqueta start/end y mostrando los campos con el widget. Siempre pasándole el formulario por parámetro #}
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}

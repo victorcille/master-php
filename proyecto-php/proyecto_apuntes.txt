@@ -1,0 +1,3 @@
+Este proyecto consiste en un blog de videojuegos con su login, registro, etc..
+Este es el primer proyectito del master en PHP de víctor robles y está hecho con php puro aplicando los primeros pasos dados en el curso.
+No sigue un modelo MVC pero sirve para ver cómo usar PHP.
